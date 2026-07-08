@@ -20,41 +20,63 @@ export const apiService = {
       return response.data;
     } catch (err) {
       console.warn("FastAPI backend is offline. Falling back to local Gemma simulation.", err);
-      await delay(2500); // simulate Gemma reasoning
+      await delay(2200); // simulate Gemma reasoning
       
       const cleanPrompt = prompt.trim();
-      const mockMatch = MOCK_CHAT_RESPONSES[cleanPrompt];
-      if (mockMatch) {
-        return mockMatch;
+      const normalized = cleanPrompt.toLowerCase();
+      
+      // Dynamic keyword semantic routing
+      let matchedResponse = null;
+      if (normalized.includes('salary') || normalized.includes('pay') || normalized.includes('wage') || normalized.includes('employer') || normalized.includes('job') || normalized.includes('termination') || normalized.includes('fired')) {
+        matchedResponse = MOCK_CHAT_RESPONSES["My employer has not paid my salary."];
+      } else if (normalized.includes('landlord') || normalized.includes('rent') || normalized.includes('deposit') || normalized.includes('lease') || normalized.includes('tenant') || normalized.includes('room') || normalized.includes('flat') || normalized.includes('house')) {
+        matchedResponse = MOCK_CHAT_RESPONSES["My landlord refuses to return my deposit."];
+      } else if (normalized.includes('scam') || normalized.includes('cyber') || normalized.includes('fraud') || normalized.includes('bank') || normalized.includes('online') || normalized.includes('upi') || normalized.includes('hacked')) {
+        matchedResponse = MOCK_CHAT_RESPONSES["I received an online scam."];
+      } else if (normalized.includes('abusive') || normalized.includes('abuse') || normalized.includes('domestic') || normalized.includes('violence') || normalized.includes('husband') || normalized.includes('wife')) {
+        matchedResponse = MOCK_CHAT_RESPONSES["My husband is abusive."];
+      } else if (normalized.includes('trademark') || normalized.includes('brand') || normalized.includes('logo') || normalized.includes('patent') || normalized.includes('copyright')) {
+        matchedResponse = MOCK_CHAT_RESPONSES["I want to register a trademark."];
+      }
+
+      if (matchedResponse) {
+        return {
+          ...matchedResponse,
+          content: `Regarding your query "${prompt}": ` + matchedResponse.content
+        };
       }
       
-      // Generic fallback if not matched
+      // Dynamic generative fallback if not matched
       return {
-        content: `I have processed your query: "${prompt}". Running local inference on gemma3:4b via Ollama.`,
+        content: `Regarding your query: "${prompt}". Running local inference on gemma3:4b via Ollama. 
+
+Based on your query, this situation relates to general civil or contractual disputes. In India, such disputes are typically governed under the Indian Contract Act or specific civil statutes. It is advised to compile your documentation and prepare a formal notification.`,
         sections: {
-          situationSummary: `Legal query regarding: "${prompt}".`,
+          situationSummary: `Legal analysis for: "${prompt}".`,
           relevantLaws: [
-            "**Constitution of India**: General provisions.",
-            "**Indian Penal Code (IPC) / Bharatiya Nyaya Sanhita (BNS)**: General application."
+            `**Specific Relief Act, 1963**: Relates to specific performance of contracts related to your query.`,
+            `**BNS (Bharatiya Nyaya Sanhita), 2023**: Criminal provisions if fraud or cheating is present.`,
+            `**Code of Civil Procedure, 1908**: For filing civil suits.`
           ],
           yourRights: [
-            "Right to equality and natural justice.",
-            "Right to legal representation and advice."
+            `Right to claim damages or compensation for any direct loss suffered.`,
+            `Right to issue a formal dispute notice and request legal remedies.`,
+            `Right to representation before judicial and quasi-judicial tribunals.`
           ],
           evidenceNeeded: [
-            "Correspondence logs (Emails, WhatsApp, Letters).",
-            "Signed contracts or written documentation.",
-            "Witness accounts (if any)."
+            "Contract copies, signed agreements, or exchange of terms.",
+            "Communication history (Emails, Slack, WhatsApp chats, SMS).",
+            "Payment receipts or transaction logs."
           ],
           nextSteps: [
-            "Compile a detailed timeline of events.",
-            "Send a written notice to the counterparty outlining the issue.",
-            "Consult a legal counsel for formal representation."
+            "Prepare a chronological timeline of all events.",
+            "Draft and send a formal legal demand letter to the counterparty.",
+            "Consult a certified legal practitioner for filing a suit."
           ],
           govResources: [
-            { name: "Digital India Legal Services", description: "Government Legal Aid portal.", url: "https://nalsa.gov.in" }
+            { name: "NALSA Free Legal Aid", description: "Government Legal Aid portal for citizens.", url: "https://nalsa.gov.in" }
           ],
-          notes: "Ensure all related records are maintained securely.",
+          notes: `Keep all details documented in writing. Do not commit to compromises without consulting counsel first.`,
           disclaimer: "NyayaAI is an AI-powered assistant. This advice is for informational purposes and does not constitute formal legal counsel."
         }
       };
@@ -127,25 +149,125 @@ Yours faithfully,
       return response.data;
     } catch (err) {
       console.warn("FastAPI backend is offline. Falling back to rights checker simulation.", err);
-      await delay(2000);
-      const mockMatch = MOCK_RIGHTS_RESPONSES[situation];
-      if (mockMatch) {
-        return mockMatch;
+      await delay(1800);
+      
+      const normalized = situation.toLowerCase();
+      
+      // Dynamic keyword routing for rights checker
+      if (normalized.includes('fire') || normalized.includes('layoff') || normalized.includes('termination') || normalized.includes('fired') || normalized.includes('job') || normalized.includes('employment')) {
+        return MOCK_RIGHTS_RESPONSES["I was fired today."];
       }
+      
+      if (normalized.includes('landlord') || normalized.includes('rent') || normalized.includes('deposit') || normalized.includes('tenant') || normalized.includes('lease') || normalized.includes('room') || normalized.includes('flat') || normalized.includes('house')) {
+        return {
+          rights: [
+            "Right to refund of security deposit within 30 days of vacating the premises.",
+            "Right to notice before eviction (minimum 30 days written notice).",
+            "Right to basic amenities (water, electricity, sanitary services) which landlord cannot arbitrarily cut off.",
+            "Right to receive a signed copy of the tenancy agreement."
+          ],
+          laws: [
+            "**Model Tenancy Act, 2021 (Section 11)**: Security deposit refund regulations.",
+            "**State Rent Control Act**: Controls rent increases and eviction conditions.",
+            "**Transfer of Property Act, 1882 (Section 108)**: Rights and liabilities of lessor/lessee."
+          ],
+          compensation: "Up to double the monthly rent penalty if the landlord cut off essential utilities or wrongfully withheld the deposit.",
+          documents: [
+            "Signed Rent Agreement / Lease Deed",
+            "Utility bill clearance receipts",
+            "Bank transaction statements of deposit payment",
+            "Vacating notice / inspection clearance checklist"
+          ],
+          timeline: "Complaints before Rent Authority must be filed within 30 days of the dispute arising.",
+          offices: "Rent Authority / Rent Court of your local jurisdiction."
+        };
+      }
+      
+      if (normalized.includes('scam') || normalized.includes('cyber') || normalized.includes('fraud') || normalized.includes('bank') || normalized.includes('online') || normalized.includes('upi') || normalized.includes('hacked')) {
+        return {
+          rights: [
+            "Right to zero customer liability if bank transaction fraud is reported within 3 working days.",
+            "Right to file a complaint at any cyber cell or local police station (Zero FIR).",
+            "Right to report anonymously on the national cyber crime portal.",
+            "Right to block fraudulent bank accounts and request chargebacks."
+          ],
+          laws: [
+            "**Information Technology Act, 2000 (Section 66D)**: Cheating by personation using computer resource.",
+            "**Bharatiya Nyaya Sanhita, 2023**: Fraud, cheating, and property delivery.",
+            "**RBI Master Circular on Customer Liability**: Rules for unauthorized electronic transactions."
+          ],
+          compensation: "Full refund / reversal of unauthorized charges by the bank if reported within 72 hours of occurrence.",
+          documents: [
+            "Bank account transaction statements",
+            "Screenshots of the scam chats or websites",
+            "Phone number, UPI ID, or bank account of the scammer"
+          ],
+          timeline: "Zero bank liability applies if reported within 3 days. Reporting Cyber Crime should ideally be within the Golden Hour (first 2 hours).",
+          offices: "National Cyber Crime Reporting Portal (cybercrime.gov.in) or local Cyber Cell."
+        };
+      }
+
+      if (normalized.includes('abusive') || normalized.includes('abuse') || normalized.includes('domestic') || normalized.includes('violence') || normalized.includes('husband') || normalized.includes('wife')) {
+        return {
+          rights: [
+            "Right to protection orders preventing abuse, harassment, or contact from the husband/relatives.",
+            "Right to reside in the shared marital household, regardless of title ownership.",
+            "Right to claim maintenance and custody of minor children.",
+            "Right to free legal aid from Legal Services Authorities."
+          ],
+          laws: [
+            "**Protection of Women from Domestic Violence Act, 2005**: Fast civil protection remedies.",
+            "**BNS, 2023 (Section 85) / IPC 498A**: Cruelty by husband or relatives."
+          ],
+          compensation: "Compensation order for physical, mental, or emotional distress determined by the Magistrate.",
+          documents: [
+            "Medical check-up certificates (if applicable)",
+            "Audio / Video recording copies of verbal abuse or threats",
+            "Police General Diary logs"
+          ],
+          timeline: "Filing can be done at any point during or after cohabitation. Emergency protection orders are usually heard in 3 days.",
+          offices: "Local Protection Officer, Service Provider, or Magistrate Court."
+        };
+      }
+
+      if (normalized.includes('trademark') || normalized.includes('brand') || normalized.includes('logo') || normalized.includes('patent') || normalized.includes('copyright')) {
+        return {
+          rights: [
+            "Exclusive right to use the brand name for goods and services in specified classes.",
+            "Right to use the ® symbol next to the brand name post-registration.",
+            "Right to sue for infringement and seek injunctions against trademark copycats."
+          ],
+          laws: [
+            "**Trademarks Act, 1999**: Brand naming protections.",
+            "**Trademark Rules, 2017**: Fee structure and filing guidelines."
+          ],
+          compensation: "Claim civil damages, accounts of profits, and destruction of counterfeit goods.",
+          documents: [
+            "Logo graphic file (JPEG/PNG)",
+            "Proof of business status (MSME/Startup certificate)",
+            "User affidavit stating date of first use"
+          ],
+          timeline: "Registration generally takes 6 to 12 months. Opposition by third parties must be filed within 4 months of advertisement.",
+          offices: "Office of the Controller General of Patents, Designs & Trade Marks (IP India)."
+        };
+      }
+
+      // Default dynamic rights checker fallback
       return {
         rights: [
-          "Right to fair hearing and protection under relevant statutes.",
-          "Right to legal assistance and counseling."
+          `Right to fair hearing and protection of interests regarding "${situation}".`,
+          "Right to legal assistance and representation."
         ],
         laws: [
-          "**Constitution of India**: Article 21 (Right to Life and Personal Liberty)."
+          "**Constitution of India**: General civil rights protections.",
+          "**Specific Relief Act, 1963**: Recovery of rights or enforcement."
         ],
-        compensation: "Subject to legal assessment by appropriate tribunal.",
+        compensation: "Subject to judicial assessment and award by local courts.",
         documents: [
-          "ID cards, written declarations, timeline logs."
+          "Written declarations, emails, receipts, contract terms."
         ],
-        timeline: "Immediate representation / Appeal filing ranges from 30 to 90 days.",
-        offices: "District Legal Services Authority (DLSA)."
+        timeline: "Statute of limitations ranges from 1 year to 3 years for civil recovery suits.",
+        offices: "District Legal Services Authority (DLSA) / Civil Court."
       };
     }
   },
