@@ -26,6 +26,14 @@ export default function Login() {
   const handleGoogleLogin = (name, email) => {
     setShowGoogleModal(false);
     localStorage.setItem('nyaya-user', JSON.stringify({ email: email.toLowerCase(), name }));
+    
+    // Auto-register in the local users database so it is remembered as a suggestion
+    const registered = JSON.parse(localStorage.getItem('nyaya-registered-users') || '[]');
+    if (!registered.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+      registered.push({ name, email: email.toLowerCase(), password: 'google-sso-account' });
+      localStorage.setItem('nyaya-registered-users', JSON.stringify(registered));
+    }
+    
     navigate('/dashboard');
   };
 
