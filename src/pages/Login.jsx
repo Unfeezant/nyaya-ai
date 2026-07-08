@@ -25,6 +25,8 @@ export default function Login() {
   const [otpError, setOtpError] = useState('');
   const [generatedOtp, setGeneratedOtp] = useState('');
   const [pendingUser, setPendingUser] = useState(null);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [googleRememberMe, setGoogleRememberMe] = useState(true);
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
@@ -36,14 +38,6 @@ export default function Login() {
   const handleGoogleLogin = (name, email) => {
     setShowGoogleModal(false);
     localStorage.setItem('nyaya-user', JSON.stringify({ email: email.toLowerCase(), name }));
-    
-    // Auto-register in the local users database so it is remembered as a suggestion
-    const registered = JSON.parse(localStorage.getItem('nyaya-registered-users') || '[]');
-    if (!registered.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-      registered.push({ name, email: email.toLowerCase(), password: 'google-sso-account' });
-      localStorage.setItem('nyaya-registered-users', JSON.stringify(registered));
-    }
-    
     navigate('/dashboard');
   };
 
@@ -85,6 +79,14 @@ export default function Login() {
       
       // Automatically log them in on successful verification
       localStorage.setItem('nyaya-user', JSON.stringify({ email: pendingUser.email, name: pendingUser.name }));
+      
+      // Handle traditional remember-me option
+      if (rememberMe) {
+        localStorage.setItem('nyaya-remembered-email', pendingUser.email);
+      } else {
+        localStorage.removeItem('nyaya-remembered-email');
+      }
+      
       setSuccessMsg("Email verified! Logging you in...");
       setTimeout(() => {
         navigate('/dashboard');
@@ -92,10 +94,13 @@ export default function Login() {
     } else if (pendingUser.type === 'google') {
       localStorage.setItem('nyaya-user', JSON.stringify({ email: pendingUser.email, name: pendingUser.name }));
       
-      if (!users.some(u => u.email.toLowerCase() === pendingUser.email)) {
-        users.push({ name: pendingUser.name, email: pendingUser.email, password: 'google-sso-account' });
-        localStorage.setItem('nyaya-registered-users', JSON.stringify(users));
+      // Save to Google SSO remember-me option
+      if (googleRememberMe) {
+        localStorage.setItem('nyaya-remembered-google', JSON.stringify({ name: pendingUser.name, email: pendingUser.email }));
+      } else {
+        localStorage.removeItem('nyaya-remembered-google');
       }
+      
       navigate('/dashboard');
     }
     
@@ -104,21 +109,25 @@ export default function Login() {
   };
 
   const getGoogleSuggestions = () => {
-    const registered = JSON.parse(localStorage.getItem('nyaya-registered-users') || '[]');
-    const userRegistered = registered.filter(u => u.email !== 'demo@nyaya.gov.in' && u.email !== 'judge@nyaya.gov.in');
-    if (userRegistered.length > 0) {
-      return userRegistered;
+    const remembered = localStorage.getItem('nyaya-remembered-google');
+    if (remembered) {
+      return [JSON.parse(remembered)];
     }
-    return [
-      { name: 'Asus User', email: 'asus@gmail.com' }
-    ];
+    return []; // No suggestions unless checked in Remember Me!
   };
 
   useEffect(() => {
     if (!localStorage.getItem('nyaya-registered-users')) {
       localStorage.setItem('nyaya-registered-users', JSON.stringify(PRESET_USERS));
     }
-  }, []);
+    
+    // Pre-populate remembered email if present
+    const rememberedEmail = localStorage.getItem('nyaya-remembered-email');
+    if (rememberedEmail) {
+      reset({ email: rememberedEmail });
+      setRememberMe(true);
+    }
+  }, [reset]);
 
   const onSubmit = (data) => {
     setErrorMsg('');
@@ -274,9 +283,11 @@ export default function Login() {
                       id="remember-me"
                       name="remember-me"
                       type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
                       className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/25 bg-slate-50 dark:bg-slate-900 cursor-pointer"
                     />
-                    <label htmlFor="remember-me" className="ml-2 block text-xs text-slate-500 dark:text-slate-400 select-none">
+                    <label htmlFor="remember-me" className="ml-2 block text-xs text-slate-500 dark:text-slate-400 select-none cursor-pointer">
                       Remember me
                     </label>
                   </div>
@@ -448,6 +459,18 @@ export default function Login() {
                     onChange={(e) => setCustomGoogleEmail(e.target.value)}
                     className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/25 text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
                   />
+                  <div className="flex items-center py-1">
+                    <input
+                      id="google-remember-me"
+                      type="checkbox"
+                      checked={googleRememberMe}
+                      onChange={(e) => setGoogleRememberMe(e.target.checked)}
+                      className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/25 bg-slate-50 dark:bg-slate-900 cursor-pointer"
+                    />
+                    <label htmlFor="google-remember-me" className="ml-2 block text-[10px] text-slate-500 dark:text-slate-400 select-none cursor-pointer">
+                      Remember me on this device
+                    </label>
+                  </div>
                   <Button
                     onClick={() => {
                       if (customGoogleName.trim() && customGoogleEmail.trim()) {
