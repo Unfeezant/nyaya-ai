@@ -1,25 +1,72 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Scale, Lock, Mail, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Scale, Lock, Mail, ArrowRight, UserCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { Input } from '../components/Form';
 
+const PRESET_USERS = [
+  { email: 'demo@nyaya.gov.in', password: 'password123', name: 'Advocate Ramesh' },
+  { email: 'judge@nyaya.gov.in', password: 'password123', name: 'Justice Verma' }
+];
+
 export default function Login() {
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+
+  useEffect(() => {
+    if (!localStorage.getItem('nyaya-registered-users')) {
+      localStorage.setItem('nyaya-registered-users', JSON.stringify(PRESET_USERS));
+    }
+  }, []);
 
   const onSubmit = (data) => {
+    setErrorMsg('');
+    setSuccessMsg('');
     setLoading(true);
+    
     // Simulate auth verification delay
     setTimeout(() => {
       setLoading(false);
-      localStorage.setItem('nyaya-user', JSON.stringify({ email: data.email, name: 'Citizen Advocate' }));
-      navigate('/dashboard');
-    }, 1500);
+      const users = JSON.parse(localStorage.getItem('nyaya-registered-users') || JSON.stringify(PRESET_USERS));
+      
+      if (isSignUp) {
+        // Registering
+        if (data.password !== data.confirmPassword) {
+          setErrorMsg("Passwords do not match");
+          return;
+        }
+        if (users.find(u => u.email.toLowerCase() === data.email.toLowerCase())) {
+          setErrorMsg("Email is already registered");
+          return;
+        }
+        const newUser = {
+          email: data.email.toLowerCase(),
+          password: data.password,
+          name: data.name || 'Citizen Advocate'
+        };
+        const updatedUsers = [...users, newUser];
+        localStorage.setItem('nyaya-registered-users', JSON.stringify(updatedUsers));
+        setSuccessMsg("Account registered successfully! You can now log in.");
+        setIsSignUp(false);
+        reset();
+      } else {
+        // Logging in
+        const matchedUser = users.find(u => u.email.toLowerCase() === data.email.toLowerCase() && u.password === data.password);
+        if (!matchedUser) {
+          setErrorMsg("Invalid email or password");
+          return;
+        }
+        localStorage.setItem('nyaya-user', JSON.stringify({ email: matchedUser.email, name: matchedUser.name }));
+        navigate('/dashboard');
+      }
+    }, 1200);
   };
 
   return (
@@ -37,7 +84,7 @@ export default function Login() {
           </span>
         </Link>
         <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-display">
-          Sign in to your platform
+          {isSignUp ? 'Create your platform account' : 'Sign in to your platform'}
         </h2>
         <p className="mt-2 text-center text-xs text-slate-400 dark:text-slate-500">
           Secure, offline-first national legal intelligence
@@ -50,8 +97,42 @@ export default function Login() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <Card className="glass-card shadow-2xl p-8 border border-slate-200/50 dark:border-slate-800/80">
-            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <Card className="glass-card shadow-2xl p-8 border border-slate-200/50 dark:border-slate-800/80 space-y-6">
+            
+            {/* Status alerts */}
+            {errorMsg && (
+              <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-xl text-xs font-semibold text-left">
+                ⚠️ {errorMsg}
+              </div>
+            )}
+            {successMsg && (
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-xl text-xs font-semibold text-left">
+                ✅ {successMsg}
+              </div>
+            )}
+
+            {/* Helper tips for presets */}
+            {!isSignUp && (
+              <div className="p-3 bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/10 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl text-[10px] text-left leading-relaxed">
+                💡 <strong>Demo Preset Account</strong>:<br />
+                • Email: <code className="bg-slate-100 dark:bg-slate-900 px-1 py-0.5 rounded select-all">demo@nyaya.gov.in</code><br />
+                • Password: <code className="bg-slate-100 dark:bg-slate-900 px-1 py-0.5 rounded select-all">password123</code>
+              </div>
+            )}
+
+            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+              
+              {isSignUp && (
+                <Input
+                  label="Full Name"
+                  id="name"
+                  type="text"
+                  placeholder="Advocate Ramesh"
+                  error={errors.name?.message}
+                  {...register("name", { required: isSignUp ? "Name is required" : false })}
+                />
+              )}
+
               <Input
                 label="Email address"
                 id="email"
@@ -76,25 +157,38 @@ export default function Login() {
                 })}
               />
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-slate-350 text-blue-600 focus:ring-blue-500/25 bg-slate-50 dark:bg-slate-900 cursor-pointer"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-xs text-slate-500 dark:text-slate-400 select-none">
-                    Remember me
-                  </label>
-                </div>
+              {isSignUp && (
+                <Input
+                  label="Confirm Password"
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  error={errors.confirmPassword?.message}
+                  {...register("confirmPassword", { required: isSignUp ? "Please confirm your password" : false })}
+                />
+              )}
 
-                <div className="text-xs">
-                  <a href="#" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
-                    Forgot password?
-                  </a>
+              {!isSignUp && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input
+                      id="remember-me"
+                      name="remember-me"
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/25 bg-slate-50 dark:bg-slate-900 cursor-pointer"
+                    />
+                    <label htmlFor="remember-me" className="ml-2 block text-xs text-slate-500 dark:text-slate-400 select-none">
+                      Remember me
+                    </label>
+                  </div>
+
+                  <div className="text-xs">
+                    <a href="#" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                      Forgot password?
+                    </a>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div>
                 <Button
@@ -106,18 +200,44 @@ export default function Login() {
                   {loading ? (
                     <span className="flex items-center gap-2">
                       <span className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin"></span>
-                      Authing...
+                      Processing...
                     </span>
                   ) : (
                     <>
-                      Sign In <ArrowRight className="w-4 h-4" />
+                      {isSignUp ? 'Register Account' : 'Sign In'} <ArrowRight className="w-4 h-4" />
                     </>
                   )}
                 </Button>
               </div>
             </form>
 
-            <div className="mt-6">
+            <div className="text-center text-xs">
+              {isSignUp ? (
+                <p className="text-slate-500 dark:text-slate-450">
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => { setIsSignUp(false); setErrorMsg(''); setSuccessMsg(''); reset(); }}
+                    className="font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer bg-transparent border-0"
+                  >
+                    Sign In here
+                  </button>
+                </p>
+              ) : (
+                <p className="text-slate-500 dark:text-slate-450">
+                  Don't have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => { setIsSignUp(true); setErrorMsg(''); setSuccessMsg(''); reset(); }}
+                    className="font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer bg-transparent border-0"
+                  >
+                    Register here
+                  </button>
+                </p>
+              )}
+            </div>
+
+            <div className="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-slate-200 dark:border-slate-800" />
@@ -129,7 +249,7 @@ export default function Login() {
                 </div>
               </div>
 
-              <div className="mt-6">
+              <div className="mt-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -149,7 +269,7 @@ export default function Login() {
               </div>
             </div>
             
-            <div className="mt-6 text-center text-xs text-slate-400 dark:text-slate-655 flex items-center justify-center gap-1">
+            <div className="text-center text-xs text-slate-400 dark:text-slate-500 flex items-center justify-center gap-1">
               <span>🟢 Powered by Local Gemma AI</span>
             </div>
           </Card>

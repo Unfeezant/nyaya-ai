@@ -52,7 +52,7 @@ export default function Dashboard() {
   const menuItems = [
     { id: 'overview', name: 'Dashboard Overview', icon: <LayoutDashboard className="w-5 h-5" /> },
     { id: 'chat', name: 'AI Legal Assistant', icon: <MessageSquareCode className="w-5 h-5" /> },
-    { id: 'complaint', name: 'Complaint Registration', icon: <FileSignature className="w-5 h-5" /> },
+    { id: 'complaint', name: 'Draft a Complaint', icon: <FileSignature className="w-5 h-5" /> },
     { id: 'explainer', name: 'Document Explainer', icon: <FileSearch className="w-5 h-5" /> },
     { id: 'rights', name: 'Rights Checker', icon: <ShieldAlert className="w-5 h-5" /> },
     { id: 'evidence', name: 'Evidence Manager', icon: <FolderGit className="w-5 h-5" /> },

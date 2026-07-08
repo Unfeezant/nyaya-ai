@@ -152,7 +152,7 @@ export default function DocumentExplainer() {
               {activeTab === 'summary' && (
                 <div className="space-y-4">
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Executive Summary</h4>
-                  <p className="text-sm text-slate-700 dark:text-slate-350 leading-relaxed font-sans">{analysis.summary}</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-sans">{analysis.summary}</p>
                   
                   {/* Summary Footer actions */}
                   <div className="flex gap-2 pt-6">
@@ -201,7 +201,7 @@ export default function DocumentExplainer() {
                   </h4>
                   <div className="space-y-3">
                     {analysis.unfairClauses.map((c, i) => (
-                      <div key={i} className="p-3 bg-rose-500/5 border-l-4 border-l-rose-500 rounded-r-xl text-xs sm:text-sm text-slate-755 dark:text-rose-350 leading-relaxed font-sans">
+                      <div key={i} className="p-3 bg-rose-500/5 border-l-4 border-l-rose-500 rounded-r-xl text-xs sm:text-sm text-slate-700 dark:text-rose-300 leading-relaxed font-sans">
                         {c}
                       </div>
                     ))}
@@ -215,8 +215,8 @@ export default function DocumentExplainer() {
                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Your Duties / Responsibilities</h4>
                     <ul className="space-y-2">
                       {analysis.responsibilities.map((r, i) => (
-                        <li key={i} className="text-xs sm:text-sm text-slate-700 dark:text-slate-350 flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-450 mt-2 flex-shrink-0"></span>
+                        <li key={i} className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-2 flex-shrink-0"></span>
                           <span>{r}</span>
                         </li>
                       ))}
@@ -226,7 +226,7 @@ export default function DocumentExplainer() {
                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Counterparty Responsibilities</h4>
                     <ul className="space-y-2">
                       {analysis.rights.map((r, i) => (
-                        <li key={i} className="text-xs sm:text-sm text-slate-750 dark:text-slate-350 flex items-start gap-2">
+                        <li key={i} className="text-xs sm:text-sm text-slate-705 dark:text-slate-300 flex items-start gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 flex-shrink-0"></span>
                           <span>{r}</span>
                         </li>
@@ -260,7 +260,7 @@ export default function DocumentExplainer() {
               <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
                 {qnaList.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 p-4 space-y-2">
-                    <HelpCircle className="w-8 h-8 text-slate-300 dark:text-slate-750" />
+                    <HelpCircle className="w-8 h-8 text-slate-300 dark:text-slate-700" />
                     <p className="font-semibold text-[11px]">Ask anything about lease renewal notice, exit penalties, or security deposits.</p>
                   </div>
                 ) : (
@@ -269,15 +269,15 @@ export default function DocumentExplainer() {
                       <div className={`px-3 py-2 rounded-xl max-w-[85%] leading-relaxed ${
                         q.role === 'user'
                           ? 'bg-slate-900 text-slate-100 dark:bg-slate-800'
-                          : 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-slate-200/40 dark:border-slate-850'
-                      }`}>
+                          : 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-slate-200/40 dark:border-slate-800'
+                      } shadow-sm`}>
                         {q.text}
                       </div>
                     </div>
                   ))
                 )}
                 {askLoading && (
-                  <div className="flex justify-start items-center gap-2 text-slate-450 dark:text-slate-500">
+                  <div className="flex justify-start items-center gap-2 text-slate-400 dark:text-slate-500">
                     <span className="w-3 h-3 rounded-full border border-blue-500 border-t-transparent animate-spin"></span>
                     <span>Gemma is searching context...</span>
                   </div>
@@ -292,7 +292,7 @@ export default function DocumentExplainer() {
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAsk()}
-                  className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/25 text-xs text-slate-850 dark:text-slate-100 placeholder:text-slate-450"
+                  className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/25 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
                 />
                 <button
                   onClick={handleAsk}

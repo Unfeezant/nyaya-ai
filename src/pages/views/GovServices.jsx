@@ -40,28 +40,28 @@ export default function GovServices() {
           </Card>
         ) : (
           filteredServices.map((srv) => (
-            <Card key={srv.id} className="glass-card border border-slate-200/50 dark:border-slate-850 p-6 flex flex-col justify-between shadow-sm">
+            <Card key={srv.id} className="glass-card border border-slate-200/50 dark:border-slate-800 p-6 flex flex-col justify-between shadow-sm">
               <div className="space-y-4">
-                <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-850 pb-3">
-                  <div className="p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-xl text-blue-650 dark:text-blue-400">
+                <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <div className="p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-xl text-blue-600 dark:text-blue-400">
                     <Landmark className="w-5 h-5" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-150 font-display">{srv.name}</h4>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 font-display">{srv.name}</h4>
                 </div>
 
                 <div className="space-y-2 text-xs">
                   <div className="flex items-start gap-2">
                     <Info className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-slate-600 dark:text-slate-350">
-                      <span className="font-bold text-slate-700 dark:text-slate-300">Eligibility:</span> {srv.eligibility}
+                    <p className="text-slate-600 dark:text-slate-300">
+                      <span className="font-bold text-slate-800 dark:text-slate-200">Eligibility:</span> {srv.eligibility}
                     </p>
                   </div>
                   
                   <div className="flex items-start gap-2">
                     <FileText className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
                     <div>
-                      <span className="font-bold text-slate-700 dark:text-slate-300">Documents Needed:</span>
-                      <ul className="list-disc pl-4 mt-1 space-y-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                      <span className="font-bold text-slate-800 dark:text-slate-200">Documents Needed:</span>
+                      <ul className="list-disc pl-4 mt-1 space-y-0.5 text-[11px] text-slate-500 dark:text-slate-300">
                         {srv.documents.map((doc, idx) => (
                           <li key={idx}>{doc}</li>
                         ))}
@@ -71,14 +71,14 @@ export default function GovServices() {
                 </div>
 
                 {/* Meta details */}
-                <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-100 dark:border-slate-850 text-[11px]">
+                <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px]">
                   <div>
-                    <span className="text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider text-[9px]">Government Fee</span>
-                    <p className="font-bold text-slate-700 dark:text-slate-300 mt-0.5">{srv.fees}</p>
+                    <span className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[9px]">Government Fee</span>
+                    <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">{srv.fees}</p>
                   </div>
                   <div>
-                    <span className="text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider text-[9px]">Processing Timeline</span>
-                    <p className="font-bold text-slate-700 dark:text-slate-300 mt-0.5">{srv.timeline}</p>
+                    <span className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[9px]">Processing Timeline</span>
+                    <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">{srv.timeline}</p>
                   </div>
                 </div>
               </div>

@@ -272,9 +272,9 @@ export default function ComplaintWizard() {
                   </div>
                 </div>
 
-                <Card className="glass-card border border-slate-200/50 dark:border-slate-850 p-8 shadow-2xl bg-white text-slate-900 font-serif leading-relaxed text-sm whitespace-pre-wrap max-h-[500px] overflow-y-auto">
+                <div className="border border-slate-200/50 dark:border-slate-800 p-8 shadow-2xl bg-white dark:bg-slate-900/80 text-slate-900 dark:text-slate-100 font-serif leading-relaxed text-sm whitespace-pre-wrap max-h-[500px] overflow-y-auto rounded-2xl">
                   {complaintDraft ? complaintDraft.content : 'No draft content compiled.'}
-                </Card>
+                </div>
                 
                 <div className="flex items-center justify-between px-3 text-[10px] text-slate-400 dark:text-slate-600">
                   <span>🟢 Compiled completely offline by local gemma3:4b</span>
