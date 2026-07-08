@@ -29,6 +29,17 @@ export default function Login() {
     navigate('/dashboard');
   };
 
+  const getGoogleSuggestions = () => {
+    const registered = JSON.parse(localStorage.getItem('nyaya-registered-users') || '[]');
+    const userRegistered = registered.filter(u => u.email !== 'demo@nyaya.gov.in' && u.email !== 'judge@nyaya.gov.in');
+    if (userRegistered.length > 0) {
+      return userRegistered;
+    }
+    return [
+      { name: 'Asus User', email: 'asus@gmail.com' }
+    ];
+  };
+
   useEffect(() => {
     if (!localStorage.getItem('nyaya-registered-users')) {
       localStorage.setItem('nyaya-registered-users', JSON.stringify(PRESET_USERS));
@@ -312,31 +323,30 @@ export default function Login() {
 
               {/* Accounts list */}
               <div className="space-y-2">
-                <button
-                  onClick={() => handleGoogleLogin('Rajesh K. Mehta', 'rajesh.mehta@gmail.com')}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer text-left"
-                >
-                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold text-xs flex items-center justify-center">
-                    R
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Rajesh K. Mehta</p>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500">rajesh.mehta@gmail.com</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleGoogleLogin('Sonia G. Swamy', 'sonia.swamy@gmail.com')}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer text-left"
-                >
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center justify-center">
-                    S
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Sonia G. Swamy</p>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500">sonia.swamy@gmail.com</p>
-                  </div>
-                </button>
+                {getGoogleSuggestions().map((sug, idx) => {
+                  const initial = sug.name[0].toUpperCase();
+                  const bgColors = [
+                    'bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400',
+                    'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400',
+                    'bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400'
+                  ];
+                  const colorClass = bgColors[idx % bgColors.length];
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleGoogleLogin(sug.name, sug.email)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer text-left"
+                    >
+                      <div className={`w-8 h-8 rounded-full ${colorClass} font-bold text-xs flex items-center justify-center`}>
+                        {initial}
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{sug.name}</p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500">{sug.email}</p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Custom Input */}
