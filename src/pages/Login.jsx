@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { Input } from '../components/Form';
+import { useAppContext } from '../context/AppContext';
 
 const PRESET_USERS = [
   { email: 'demo@nyaya.gov.in', password: 'password123', name: 'Advocate Ramesh' },
@@ -29,6 +30,7 @@ export default function Login() {
   const [googleRememberMe, setGoogleRememberMe] = useState(true);
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
+  const { loginUser } = useAppContext();
 
   const validateGmail = (email) => {
     const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
@@ -37,7 +39,7 @@ export default function Login() {
 
   const handleGoogleLogin = (name, email) => {
     setShowGoogleModal(false);
-    localStorage.setItem('nyaya-user', JSON.stringify({ email: email.toLowerCase(), name }));
+    loginUser({ email: email.toLowerCase(), name });
     navigate('/dashboard');
   };
 
@@ -78,7 +80,7 @@ export default function Login() {
       localStorage.setItem('nyaya-registered-users', JSON.stringify(updatedUsers));
       
       // Automatically log them in on successful verification
-      localStorage.setItem('nyaya-user', JSON.stringify({ email: pendingUser.email, name: pendingUser.name }));
+      loginUser({ email: pendingUser.email, name: pendingUser.name });
       
       // Handle traditional remember-me option
       if (rememberMe) {
@@ -92,7 +94,7 @@ export default function Login() {
         navigate('/dashboard');
       }, 1000);
     } else if (pendingUser.type === 'google') {
-      localStorage.setItem('nyaya-user', JSON.stringify({ email: pendingUser.email, name: pendingUser.name }));
+      loginUser({ email: pendingUser.email, name: pendingUser.name });
       
       // Save to Google SSO remember-me option
       if (googleRememberMe) {
@@ -173,7 +175,7 @@ export default function Login() {
           setErrorMsg("Invalid email or password");
           return;
         }
-        localStorage.setItem('nyaya-user', JSON.stringify({ email: matchedUser.email, name: matchedUser.name }));
+        loginUser({ email: matchedUser.email, name: matchedUser.name });
         navigate('/dashboard');
       }
     }, 1200);

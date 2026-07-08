@@ -4,6 +4,11 @@ import { apiService } from '../services/api';
 const AppContext = createContext();
 
 export function AppProvider({ children }) {
+  const [currentUser, setCurrentUser] = useState(() => {
+    const session = localStorage.getItem('nyaya-user');
+    return session ? JSON.parse(session) : null;
+  });
+
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('nyaya-theme') || 'light';
   });
@@ -12,25 +17,28 @@ export function AppProvider({ children }) {
     return localStorage.getItem('nyaya-lang') || 'English';
   });
 
-  const [savedCases, setSavedCases] = useState(() => {
-    const saved = localStorage.getItem('nyaya-saved-cases');
-    return saved ? JSON.parse(saved) : [];
-  });
+  // Isolated states for active user
+  const [savedCases, setSavedCases] = useState([]);
+  const [chats, setChats] = useState([]);
+  const [evidence, setEvidence] = useState([]);
+  const [complaints, setComplaints] = useState([]);
 
-  const [chats, setChats] = useState(() => {
-    const saved = localStorage.getItem('nyaya-chats');
-    return saved ? JSON.parse(saved) : [];
-  });
+  // Load isolated user data whenever user session changes
+  useEffect(() => {
+    const email = currentUser ? currentUser.email.toLowerCase() : 'guest';
+    
+    const savedChats = localStorage.getItem(`nyaya-chats-${email}`);
+    setChats(savedChats ? JSON.parse(savedChats) : []);
 
-  const [evidence, setEvidence] = useState(() => {
-    const saved = localStorage.getItem('nyaya-evidence');
-    return saved ? JSON.parse(saved) : [];
-  });
+    const savedEvidence = localStorage.getItem(`nyaya-evidence-${email}`);
+    setEvidence(savedEvidence ? JSON.parse(savedEvidence) : []);
 
-  const [complaints, setComplaints] = useState(() => {
-    const saved = localStorage.getItem('nyaya-complaints');
-    return saved ? JSON.parse(saved) : [];
-  });
+    const savedComplaints = localStorage.getItem(`nyaya-complaints-${email}`);
+    setComplaints(savedComplaints ? JSON.parse(savedComplaints) : []);
+
+    const savedCases = localStorage.getItem(`nyaya-saved-cases-${email}`);
+    setSavedCases(savedCases ? JSON.parse(savedCases) : []);
+  }, [currentUser]);
 
   // Apply theme to document element
   useEffect(() => {
@@ -51,33 +59,43 @@ export function AppProvider({ children }) {
     apiService.setLanguage(language);
   }, [language]);
 
-  // Keep saved cases in localStorage
+  // Sync state modifications to active user's scoped storage keys
   useEffect(() => {
-    localStorage.setItem('nyaya-saved-cases', JSON.stringify(savedCases));
-  }, [savedCases]);
+    const email = currentUser ? currentUser.email.toLowerCase() : 'guest';
+    localStorage.setItem(`nyaya-saved-cases-${email}`, JSON.stringify(savedCases));
+  }, [savedCases, currentUser]);
 
-  // Keep chats in localStorage
   useEffect(() => {
-    localStorage.setItem('nyaya-chats', JSON.stringify(chats));
-  }, [chats]);
+    const email = currentUser ? currentUser.email.toLowerCase() : 'guest';
+    localStorage.setItem(`nyaya-chats-${email}`, JSON.stringify(chats));
+  }, [chats, currentUser]);
 
-  // Keep evidence in localStorage
   useEffect(() => {
-    localStorage.setItem('nyaya-evidence', JSON.stringify(evidence));
-  }, [evidence]);
+    const email = currentUser ? currentUser.email.toLowerCase() : 'guest';
+    localStorage.setItem(`nyaya-evidence-${email}`, JSON.stringify(evidence));
+  }, [evidence, currentUser]);
 
-  // Keep complaints in localStorage
   useEffect(() => {
-    localStorage.setItem('nyaya-complaints', JSON.stringify(complaints));
-  }, [complaints]);
+    const email = currentUser ? currentUser.email.toLowerCase() : 'guest';
+    localStorage.setItem(`nyaya-complaints-${email}`, JSON.stringify(complaints));
+  }, [complaints, currentUser]);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
+  const loginUser = (userData) => {
+    localStorage.setItem('nyaya-user', JSON.stringify(userData));
+    setCurrentUser(userData);
+  };
+
+  const logoutUser = () => {
+    localStorage.removeItem('nyaya-user');
+    setCurrentUser(null);
+  };
+
   const saveCase = (caseData) => {
     setSavedCases(prev => {
-      // Avoid duplicates
       if (prev.find(c => c.id === caseData.id)) return prev;
       return [caseData, ...prev];
     });
@@ -108,14 +126,18 @@ export function AppProvider({ children }) {
     setSavedCases([]);
     setEvidence([]);
     setComplaints([]);
-    localStorage.removeItem('nyaya-chats');
-    localStorage.removeItem('nyaya-saved-cases');
-    localStorage.removeItem('nyaya-evidence');
-    localStorage.removeItem('nyaya-complaints');
+    const email = currentUser ? currentUser.email.toLowerCase() : 'guest';
+    localStorage.removeItem(`nyaya-chats-${email}`);
+    localStorage.removeItem(`nyaya-saved-cases-${email}`);
+    localStorage.removeItem(`nyaya-evidence-${email}`);
+    localStorage.removeItem(`nyaya-complaints-${email}`);
   };
 
   return (
     <AppContext.Provider value={{
+      currentUser,
+      loginUser,
+      logoutUser,
       theme,
       toggleTheme,
       language,

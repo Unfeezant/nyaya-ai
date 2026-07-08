@@ -24,7 +24,7 @@ import ProfileView from './views/ProfileView';
 export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { theme, toggleTheme, language, setLanguage } = useAppContext();
+  const { theme, toggleTheme, language, setLanguage, logoutUser } = useAppContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
@@ -50,7 +50,7 @@ export default function Dashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('nyaya-user');
+    logoutUser();
     navigate('/login');
   };
 
