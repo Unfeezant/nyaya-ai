@@ -91,9 +91,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-blue-900 flex items-center justify-center border border-blue-800">
-                <Scale className="w-5 h-5 text-emerald-400" />
-              </div>
+              <img src="/logo.jpg" alt="NyayaAI logo" className="w-10 h-10 rounded-xl object-cover border border-blue-800 shadow-md" />
               <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-display">
                 Nyaya<span className="text-blue-600 dark:text-blue-400">AI</span>
               </span>

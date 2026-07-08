@@ -30,14 +30,19 @@ export default function Dashboard() {
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
 
   const currentTab = searchParams.get('tab') || 'overview';
-  const user = JSON.parse(localStorage.getItem('nyaya-user') || '{"name":"Citizen Advocate","email":"citizen@nyaya.gov.in"}');
+  const session = localStorage.getItem('nyaya-user');
 
   useEffect(() => {
-    const session = localStorage.getItem('nyaya-user');
     if (!session) {
       navigate('/login');
     }
-  }, [navigate]);
+  }, [session, navigate]);
+
+  if (!session) {
+    return null;
+  }
+
+  const user = JSON.parse(session);
 
   const setTab = (tabName) => {
     setSearchParams({ tab: tabName });
@@ -93,9 +98,7 @@ export default function Dashboard() {
       {/* Sidebar for Desktop */}
       <aside className="hidden lg:flex flex-col w-64 border-r border-slate-200/50 dark:border-slate-850 bg-white dark:bg-slate-900/60 backdrop-blur-md relative z-25 flex-shrink-0">
         <div className="flex items-center h-16 px-6 border-b border-slate-200/50 dark:border-slate-850 gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-900 flex items-center justify-center border border-blue-800 shadow-sm">
-            <Scale className="w-4.5 h-4.5 text-emerald-400" />
-          </div>
+          <img src="/logo.jpg" alt="NyayaAI logo" className="w-8 h-8 rounded-lg object-cover border border-blue-800 shadow-sm" />
           <span className="font-bold text-lg font-display">Nyaya<span className="text-blue-600 dark:text-blue-400">AI</span></span>
         </div>
         
@@ -155,9 +158,7 @@ export default function Dashboard() {
             >
               <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-blue-900 flex items-center justify-center border border-blue-800">
-                    <Scale className="w-4.5 h-4.5 text-emerald-400" />
-                  </div>
+                  <img src="/logo.jpg" alt="NyayaAI logo" className="w-8 h-8 rounded-lg object-cover border border-blue-800" />
                   <span className="font-bold text-lg font-display">Nyaya<span className="text-blue-600 dark:text-blue-400">AI</span></span>
                 </div>
                 <button onClick={() => setSidebarOpen(false)} className="p-1 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
