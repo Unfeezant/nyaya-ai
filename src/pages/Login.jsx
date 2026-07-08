@@ -43,6 +43,18 @@ export default function Login() {
     navigate('/dashboard');
   };
 
+  const sendVerificationEmail = async (name, email, otp) => {
+    try {
+      await fetch('/.netlify/functions/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, otp })
+      });
+    } catch (err) {
+      console.warn("Failed to dispatch verification email via Netlify:", err);
+    }
+  };
+
   const startGoogleVerification = (name, email) => {
     if (!validateGmail(email)) {
       alert("Only legitimate @gmail.com addresses are supported for verification.");
@@ -60,6 +72,7 @@ export default function Login() {
     setOtpError('');
     setShowGoogleModal(false);
     setShowOtpModal(true);
+    sendVerificationEmail(name, email, code);
   };
 
   const handleVerifyOtp = () => {
@@ -168,6 +181,7 @@ export default function Login() {
         setOtpInput('');
         setOtpError('');
         setShowOtpModal(true);
+        sendVerificationEmail(data.name || 'Citizen Advocate', data.email.toLowerCase(), code);
       } else {
         // Logging in traditionally
         const matchedUser = users.find(u => u.email.toLowerCase() === data.email.toLowerCase() && u.password === data.password);
