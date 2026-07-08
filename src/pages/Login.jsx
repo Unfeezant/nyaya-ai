@@ -20,8 +20,18 @@ export default function Login() {
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [customGoogleName, setCustomGoogleName] = useState('');
   const [customGoogleEmail, setCustomGoogleEmail] = useState('');
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpInput, setOtpInput] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [pendingUser, setPendingUser] = useState(null);
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
+
+  const validateGmail = (email) => {
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    return gmailRegex.test(email);
+  };
 
   const handleGoogleLogin = (name, email) => {
     setShowGoogleModal(false);
@@ -35,6 +45,62 @@ export default function Login() {
     }
     
     navigate('/dashboard');
+  };
+
+  const startGoogleVerification = (name, email) => {
+    if (!validateGmail(email)) {
+      alert("Only legitimate @gmail.com addresses are supported for verification.");
+      return;
+    }
+    
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(code);
+    setPendingUser({
+      type: 'google',
+      email: email.toLowerCase(),
+      name
+    });
+    setOtpInput('');
+    setOtpError('');
+    setShowGoogleModal(false);
+    setShowOtpModal(true);
+  };
+
+  const handleVerifyOtp = () => {
+    if (otpInput !== generatedOtp) {
+      setOtpError("Incorrect verification code. Please check the code and try again.");
+      return;
+    }
+    
+    const users = JSON.parse(localStorage.getItem('nyaya-registered-users') || '[]');
+    
+    if (pendingUser.type === 'traditional') {
+      const newUser = {
+        email: pendingUser.email,
+        password: pendingUser.password,
+        name: pendingUser.name
+      };
+      const updatedUsers = [...users, newUser];
+      localStorage.setItem('nyaya-registered-users', JSON.stringify(updatedUsers));
+      
+      // Automatically log them in on successful verification
+      localStorage.setItem('nyaya-user', JSON.stringify({ email: pendingUser.email, name: pendingUser.name }));
+      setSuccessMsg("Email verified! Logging you in...");
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
+    } else if (pendingUser.type === 'google') {
+      localStorage.setItem('nyaya-user', JSON.stringify({ email: pendingUser.email, name: pendingUser.name }));
+      
+      if (!users.some(u => u.email.toLowerCase() === pendingUser.email)) {
+        users.push({ name: pendingUser.name, email: pendingUser.email, password: 'google-sso-account' });
+        localStorage.setItem('nyaya-registered-users', JSON.stringify(users));
+      }
+      navigate('/dashboard');
+    }
+    
+    setShowOtpModal(false);
+    setPendingUser(null);
   };
 
   const getGoogleSuggestions = () => {
@@ -65,7 +131,11 @@ export default function Login() {
       const users = JSON.parse(localStorage.getItem('nyaya-registered-users') || JSON.stringify(PRESET_USERS));
       
       if (isSignUp) {
-        // Registering
+        // Enforce legitimate @gmail.com check
+        if (!validateGmail(data.email)) {
+          setErrorMsg("Only legitimate @gmail.com addresses are supported for verification.");
+          return;
+        }
         if (data.password !== data.confirmPassword) {
           setErrorMsg("Passwords do not match");
           return;
@@ -74,18 +144,21 @@ export default function Login() {
           setErrorMsg("Email is already registered");
           return;
         }
-        const newUser = {
+        
+        // Trigger OTP verification instead of registering immediately
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        setGeneratedOtp(code);
+        setPendingUser({
+          type: 'traditional',
           email: data.email.toLowerCase(),
           password: data.password,
           name: data.name || 'Citizen Advocate'
-        };
-        const updatedUsers = [...users, newUser];
-        localStorage.setItem('nyaya-registered-users', JSON.stringify(updatedUsers));
-        setSuccessMsg("Account registered successfully! You can now log in.");
-        setIsSignUp(false);
-        reset();
+        });
+        setOtpInput('');
+        setOtpError('');
+        setShowOtpModal(true);
       } else {
-        // Logging in
+        // Logging in traditionally
         const matchedUser = users.find(u => u.email.toLowerCase() === data.email.toLowerCase() && u.password === data.password);
         if (!matchedUser) {
           setErrorMsg("Invalid email or password");
@@ -378,7 +451,7 @@ export default function Login() {
                   <Button
                     onClick={() => {
                       if (customGoogleName.trim() && customGoogleEmail.trim()) {
-                        handleGoogleLogin(customGoogleName, customGoogleEmail);
+                        startGoogleVerification(customGoogleName, customGoogleEmail);
                       }
                     }}
                     disabled={!customGoogleName.trim() || !customGoogleEmail.trim()}
@@ -387,6 +460,82 @@ export default function Login() {
                     className="w-full justify-center"
                   >
                     Continue
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showOtpModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowOtpModal(false)}
+              className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs"
+            />
+            
+            {/* Modal Box */}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 w-full max-w-sm relative z-10 text-left space-y-4"
+            >
+              <div className="flex flex-col items-center text-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                <div className="w-12 h-12 rounded-full bg-blue-500/10 dark:bg-blue-500/10 flex items-center justify-center mb-2 text-xl">
+                  ✉️
+                </div>
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 font-display">Verify your email address</h3>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                  We sent a 6-digit verification code to <span className="font-semibold text-slate-700 dark:text-slate-300">{pendingUser?.email}</span>.
+                </p>
+              </div>
+
+              {otpError && (
+                <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-xl text-[10px] font-semibold text-left">
+                  ⚠️ {otpError}
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Verification Code</label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    placeholder="Enter 6-digit code"
+                    value={otpInput}
+                    onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
+                    className="w-full text-center tracking-widest text-lg font-bold py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-800 dark:text-slate-100"
+                  />
+                </div>
+
+                <div className="p-3 bg-blue-500/5 border border-blue-500/10 rounded-xl text-[10px] text-blue-600 dark:text-blue-400 space-y-1">
+                  <p className="font-bold">🔧 Local Sandbox Verification Service</p>
+                  <p>In a live deployment, this code is sent to your inbox. For offline testing, your verification code is: <span className="font-bold text-xs underline">{generatedOtp}</span></p>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setShowOtpModal(false)}
+                    variant="outline"
+                    className="w-1/2 justify-center"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleVerifyOtp}
+                    variant="primary"
+                    className="w-1/2 justify-center"
+                    disabled={otpInput.length !== 6}
+                  >
+                    Verify & Login
                   </Button>
                 </div>
               </div>
