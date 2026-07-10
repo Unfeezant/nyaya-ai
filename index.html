@@ -5,10 +5,68 @@
     <link rel="icon" type="image/jpeg" href="./logo.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NyayaAI – Sovereign AI Legal Platform</title>
-    <script type="module" crossorigin src="./assets/index-BouJODH9.js"></script>
+
+    <!-- Google Translate – hidden toolbar, driven programmatically by language selector -->
+    <style>
+      /* Hide the Google Translate toolbar completely */
+      .goog-te-banner-frame,
+      .goog-te-balloon-frame,
+      #goog-gt-tt,
+      .goog-te-bubble,
+      .skiptranslate { display: none !important; }
+      body { top: 0 !important; }
+    </style>
+    <script type="module" crossorigin src="./assets/index-BiwjGucM.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-4gIBbeiq.css">
   </head>
   <body>
+    <!-- Hidden Google Translate element -->
+    <div id="google_translate_element" style="display:none;"></div>
+
     <div id="root"></div>
+
+    <!-- Google Translate script -->
+    <script>
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement(
+          { pageLanguage: 'en', autoDisplay: false },
+          'google_translate_element'
+        );
+      }
+
+      // Expose a global function the React app can call to change language
+      window.nyayaSetLanguage = function(langCode) {
+        const map = {
+          'English':   'en',
+          'Hindi':     'hi',
+          'Punjabi':   'pa',
+          'Tamil':     'ta',
+          'Gujarati':  'gu',
+          'Marathi':   'mr',
+          'Kannada':   'kn',
+          'Telugu':    'te',
+          'Malayalam': 'ml',
+          'Bengali':   'bn'
+        };
+        const code = map[langCode] || 'en';
+
+        if (code === 'en') {
+          // Restore to English
+          const restore = document.querySelector('.goog-te-menu-value');
+          if (restore) restore.click();
+          // Use cookie reset approach
+          document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + location.hostname;
+          location.reload();
+          return;
+        }
+
+        // Set the googtrans cookie and reload
+        document.cookie = 'googtrans=/en/' + code + '; path=/';
+        document.cookie = 'googtrans=/en/' + code + '; path=/; domain=.' + location.hostname;
+        location.reload();
+      };
+    </script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
   </body>
 </html>
